@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>在线聊天室</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/reset.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+<div class="wrapper">
+    <div class="container">
+        <div class="left">
+            <div class="top">月儿和坤儿叔</div>
+            <ul class="people">
+                <li class="person" data-chat="person2">
+                    <img src="img/dog.png" alt=""/>
+                    <span class="name">我们</span>
+                    <span class="time">13:14</span>
+                </li>
+            </ul>
+        </div>
+        <div class="right">
+            <div class="top"><span><span class="name">悄悄话</span></span></div>
+            <div class="chat" data-chat="person2">
+                <template v-for="item in msglist">
+                <div :class="item.style">
+                    {{ item.data }}
+                </div>
+                </template>
+            </div>
+
+            <div class="write">
+                <input type="text" v-model="msg" placeholder="输入内容" @keydown.enter="send" />
+                <!-- vue 修饰符 once prevent stop enter shift alt -->
+                <a @click.prevent="send" class="write-link send"></a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/index.js"></script>
+<script src="js/vue.js"></script>
+<script>
+  // 客户端连接websocket服务器端
+  const ws = new WebSocket('ws://117.48.205.28:6060');
+  // 事件监听
+  // 建议链接时事件
+  ws.onopen = () => {
+    console.log('连接建立')
+  };
+  // 接受消息事件
+  ws.onmessage = ({data}) => {
+    // 返回的是一个json字符串，json字符串转为对象  es6提供一个方法
+    let json = JSON.parse(data);
+
+    // 使用vue提供变异方法
+    vm.msglist.push(json);
+  };
+
+  // 实例化  主组件中，data是用的对象非函数 子组件data用的是函数返回一个对象
+  const vm = new Vue({
+    el: '.wrapper',
+    data: {
+      msg: '',
+      // 消息列表
+      msglist: []
+    },
+    methods: {
+      // 发送消息事件
+      send() {
+        ws.send(this.msg);
+        this.msg = '';
+      }
+    }
+
+  });
+
+</script>
+</body>
+
+</html>
